@@ -134,7 +134,7 @@ export function GuestForm() {
         {/* Количество гостей */}
         <div>
           <label className="block mb-2" style={{ color: 'var(--wedding-text)', fontFamily: 'var(--font-body)' }}>
-            Количество гостей с Вами:
+            Количество гостей включая Вас:
           </label>
           <input
               type="number"
