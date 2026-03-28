@@ -393,7 +393,7 @@ export default function App() {
           </AnimatedSection>
           
           {/* Заключительный текст */}
-          <AnimatedSection delay={0.4}>
+          <AnimatedSection delay={0.2}>
             <p 
               className="text-center text-xl md:text-2xl mb-12 px-4"
               style={{ 
@@ -406,7 +406,7 @@ export default function App() {
           </AnimatedSection>
           
           {/* Футер */}
-          <AnimatedSection delay={0.4}>
+          <AnimatedSection delay={0.2}>
             <footer className="text-center py-4 border-t-2" style={{ borderColor: 'var(--wedding-accent)' }}>
               <div className="flex justify-center mb-4">
                 <Heart size={48} style={{ color: 'var(--wedding-accent)' }} className="animate-pulse" />

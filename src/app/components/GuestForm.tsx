@@ -22,12 +22,10 @@ export function GuestForm() {
 
   const [errors, setErrors] = useState<{ [key: number]: string }>({});
   const [submitted, setSubmitted] = useState(false);
-  const [guestCountError, setGuestCountError] = useState(false); // для проверки guestCount
+  const [guestCountError, setGuestCountError] = useState(false);
+  const [networkError, setNetworkError] = useState(''); // 🔥 добавлено
 
   const validateName = (name: string): boolean => {
-    // Проверка: 3 слова, разделенных пробелами, начинаются с заглавной буквы, только русские буквы
-    // const nameRegex = /^[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+$/;
-    // return nameRegex.test(name);
     return name.length > 0;
   };
 
@@ -39,7 +37,8 @@ export function GuestForm() {
       guestNames: Array(count).fill('').map((_, i) => prev.guestNames[i] || '')
     }));
     setErrors({});
-    setGuestCountError(false); // сброс ошибки при изменении
+    setGuestCountError(false);
+    setNetworkError(''); // 🔥 сброс
   };
 
   const handleNameChange = (index: number, value: string) => {
@@ -61,7 +60,8 @@ export function GuestForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Проверка, что есть хотя бы один гость
+    setNetworkError(''); // 🔥 сброс перед отправкой
+
     if (formData.guestsCount === 0) {
       setGuestCountError(true);
       return;
@@ -69,8 +69,11 @@ export function GuestForm() {
 
     const newErrors: { [key: number]: string } = {};
 
-    // Валидация ФИО: если пустое или невалидное, ошибка
-    formData.guestNames.forEach((name, index) => {
+    const names = Array(formData.guestsCount)
+        .fill('')
+        .map((_, i) => formData.guestNames[i] || '');
+
+    names.forEach((name, index) => {
       if (!validateName(name)) {
         newErrors[index] = 'Формат: Иванов Иван Иванович';
       }
@@ -81,7 +84,6 @@ export function GuestForm() {
       return;
     }
 
-    // Если чекбокс трансфер скрыт, ставим false
     const transferValue = formData.needsAccommodation ? false : formData.needsTransfer;
 
     const payload = {
@@ -90,8 +92,7 @@ export function GuestForm() {
     };
 
     try {
-      // Отправка данных
-      fetch(
+      const response = await fetch(
           "https://script.google.com/macros/s/AKfycbx7z6mwJdug8I9jO7RD8HprTsQfS7YwHK-ksctrsKLTueiGhJJUdUaEjgvzUY9rOxAS/exec",
           {
             method: "POST",
@@ -103,10 +104,9 @@ export function GuestForm() {
           }
       );
 
-      // Считаем, что запись успешна
+      // при no-cors нельзя проверить response.ok, поэтому считаем успехом если не упало
       setSubmitted(true);
 
-      // Очистка формы
       setFormData({
         guestsCount: 1,
         guestNames: [],
@@ -122,19 +122,10 @@ export function GuestForm() {
       setTimeout(() => setSubmitted(false), 5000);
 
     } catch {
-      // Игнорируем ошибки из-за CORS
-      setSubmitted(true);
-      setFormData({
-        guestsCount: 1,
-        guestNames: [],
-        needsAccommodation: false,
-        needsTransfer: false,
-        secondDay: false,
-        notes: ''
-      });
-      setErrors({});
-      setGuestCountError(false);
-      setTimeout(() => setSubmitted(false), 5000);
+      // 🔥 теперь реально показываем ошибку
+      setNetworkError('Ошибка сети. Попробуйте еще раз.');
+
+      setSubmitted(false);
     }
   };
 
@@ -291,6 +282,13 @@ export function GuestForm() {
               </>
           )}
         </button>
+
+        {/* 🔥 Ошибка сети */}
+        {networkError && (
+            <p className="text-sm text-center" style={{ color: '#d4183d' }}>
+              {networkError}
+            </p>
+        )}
       </form>
   );
 }
